@@ -2,7 +2,7 @@
 Idena Address Monitor is based on your browser local database which shows the current status of individual identifications
 
 ## Demo
-[Click here to preview](https://mativve.github.io/covid-info-and-stats/)
+[Click here to preview](https://mativve.github.io/Idena-Address-Monitor/)
 
 ## For those who do not know the Idena cryptocurrency
 In few words, "Idena is the first proof-of-person blockchain where every node belongs to a certain individual and has equal voting power. It is one of the most decentralized blockchains." - [Write more](https://idena.io/)
