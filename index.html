@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idena Address Monitor</title>
+
+    <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap-grid.min.css'/>
+    <link href="//fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"> 
+    <link href="//cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="dist/css/style.css">
+
+    <link rel="shortcut icon" href="dist/img/icon.png" type="image/x-icon">
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+
+            <!-- Header -->
+            <header class="header">
+                <div class="row py-5">
+                    <div class="col-12 header-in">
+                        <div class="logo">
+                            <div class="icon">
+                                <img src="dist/img/icon.png" alt="Idena Address Monitor">
+                            </div>
+                            <div class="text">
+                                <h1>Idena Address Monitor</h1>
+                                <p>Based on your browser local database</p>
+                            </div>
+                        </div>
+
+                        <div class="data-manager" id="data-manager">
+                            <button class="btn block" v-on:click="toggleModal">Data manager <i class='bx bxs-file-archive'></i></button>
+                            <div class="modal" v-bind:class="{ show: modal_active }">
+                                <div class="modal-in">
+                                    <div class="modal-header">
+                                        <p class="modal-title">Data Manager</p>
+                                        <button class="btn circle" v-on:click="toggleModal"><i class='bx bx-x'></i></button>
+                                    </div>
+                                    <div class="modal-content">
+                                        <div class="data-manager-col">
+                                            <p class="modal-subtitle">Export data</p>
+
+                                            <button class="btn block" v-on:click="saveFile">Export <i class='bx bx-export'></i></button>
+
+                                            <p class="info">File will be save with in format:<br/><i>iam_YYYY_MM_DD_HH_MM.iam</i></p>
+                                        </div>
+                                        <div class="data-manager-col">
+                                            <p class="modal-subtitle">Import data</p>
+
+                                            <button class="btn block" v-on:click="loadFile">Import <i class='bx bx-import'></i></button>
+
+                                            <p class="info warning">Watch out witch file you choose because after import data was <b>overwrited</b>!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Sidebar & Table -->
+            <div class="row flex-column-reverse flex-lg-row">
+                <div class="col-md-12 col-lg-4 mt-5 mt-lg-0">
+                    <div class="box epoch-info" id="epoch-info">
+                        <p>Epoch: <b>{{ epoch }}</b></p>
+                        <p>Next validation: <b v-html="time"></b><small>[{{ timeDate }}]</small></p>
+                        <p>Minimum score to invite: <b>{{ scoreToInvite }}</b></p>
+                    </div>
+                    <div class="box idena-info">
+                        <div class="coinmarketcap-currency-widget" data-currencyid="5836" data-base="USD" data-secondary="BTC" data-ticker="true" data-rank="false" data-marketcap="true" data-volume="true" data-statsticker="true" data-stats="USD"></div>
+                        <script type="text/javascript" src="https://files.coinmarketcap.com/static/widget/currency.js"></script>
+                    </div>
+                    <div class="box twitter">
+                        <a class="twitter-timeline" data-lang="en" data-dnt="true" data-theme="dark" href="https://twitter.com/IdenaNetwork?ref_src=twsrc%5Etfw">Tweets by IdenaNetwork</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                    </div>
+                </div>
+                <div id="table" class="col-md-12 col-lg-8">
+                    <form class="table-action" @submit.prevent="saveData">
+                        <input type="text" class="input-control" placeholder="Nick" v-model="name">
+                        <input type="text" class="input-control" placeholder="Address" v-model="id">
+                        <button class="btn block" type="submit">Add <i class='bx bx-plus-circle'></i></button>
+                    </form>
+                    <table class="table-address">
+                        <thead>
+                            <tr>
+                                <th>Avatar</th>
+                                <th>Nick</th>
+                                <th>Status</th>
+                                <th>Score</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody v-if="addresses.length == 0">
+                            <tr>
+                                <td colspan="5" class="py-3">Your list is empty</p></td>
+                            </tr>
+                        </tbody>
+                        <template v-else v-for="(address, index) in addresses" :key="index">
+                            <tbody class="table-group">
+                                <tr>
+                                    <td data-title="Avatar">
+                                        <img :src="'https://robohash.org/' + address.id" alt="Avatar" class="avatar">
+                                    </td>
+                                    <td data-title="Nick"><a :href="'https://scan.idena.io/identity/' + address.id" target="_blank">{{ address.name }}</a></td>
+                                    <td data-title="Status">
+                                        <div class="status-dot" v-bind:class="{online: address.online, offline: !address.online}" :data-tooltip='(address.online) ? "Online" : "Offline"'></div>
+                                    </td>
+                                    <td data-title="Score">{{ address.score }}</td>
+                                    <td data-title="Action">
+                                        <button class="btn circle blue" v-on:click="toggleInfo(index)" :data-tooltip='(!address.more) ? "Show more" : "Show less"'><i class='bx bxs-info-circle' v-if="!address.more"></i><i class='bx bx-x' v-if="address.more"></i></button>
+                                        <button class="btn circle red" v-on:click="removeAddress(index)" data-tooltip='Delete'><i class='bx bxs-trash-alt'></i></button>
+                                    </td>
+                                </tr>
+                                <tr v-if="address.more == true" class="table-more">
+                                    <td colspan="5">
+                                        <p>Address: <small>{{ address.id }}</small></p>
+                                        <p>State: <small>{{ address.state }}</small></p>
+                                        <p>Online: <small>{{ (address.online) ? "Yes" : "No" }}</small></p>
+                                        <br/>
+                                        <p>Stake: <small>{{ address.stake }}</small></p>
+                                        <p>Balance: <small>{{ address.balance }}</small></p>
+                                        <p>Penalty: <small>{{ address.penalty }}</small></p>
+                                        <br/>
+                                        <p><a :href="'https://scan.idena.io/address/' + address.id" target="_blank">Show more details</a></p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </template>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="row py-5 footer" id="footer">
+                <div class="col-12 d-flex justify-content-between flex-column flex-lg-row">
+                    <div>
+                        <p>Create by: Mativve</p>
+                    <div>
+                        <p>Version: {{ ver }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>      
+
+    <script src="//unpkg.com/vue@next"></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/favico.js/0.3.10/favico.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script>
+    <script src="dist/js/main.js"></script>
+</body>
+</html>
