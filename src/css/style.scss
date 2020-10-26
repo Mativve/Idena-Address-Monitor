@@ -29,6 +29,22 @@ a{
     text-decoration: none;
 }
 
+.red{
+    color: $red;
+}
+
+.green{
+    color: $green;
+}
+
+.blue{
+    color: $blue;
+}
+
+.orange{
+    color: $orange;
+}
+
 .header{
     &-in{
         display: flex;
@@ -38,6 +54,7 @@ a{
         @media screen and (max-width:560px){
             align-items: center;
             justify-content: center;
+            flex-wrap: wrap;
         }
     }
 
@@ -344,7 +361,7 @@ a{
     &.block{
         padding: 8px 16px;
 
-        i{
+        span + i{
             margin-left: 8px;
         }
 
@@ -371,6 +388,19 @@ a{
 
     &.orange{
         color: $orange;
+    }
+
+    &-group{
+        display: flex;
+        align-items: center;
+
+        .btn{
+            flex: 0 1 auto;
+        }
+
+        & + .btn{
+            margin-top: 4px;
+        }
     }
 }
 
@@ -476,6 +506,9 @@ a{
     &.show{
         visibility: visible;
         opacity: 1;
+
+        overflow: hidden;
+        overflow-y: auto;
     }
 
     &-header{
@@ -486,13 +519,22 @@ a{
     }
 
     &-in{
-        max-width: 600px;
+        max-width: 800px;
         margin: 5em auto;
+
+        @media screen and (max-width:768px){
+            padding: 5em 16px;
+            margin: auto;
+        }
     }
 
     &-content{
         display: flex;
         align-items: flex-start;
+
+        @media screen and (max-width:768px){
+            flex-wrap: wrap;
+        }
     }
 
     &-title{
@@ -508,23 +550,51 @@ a{
 }
 
 .data-manager{
+    @media screen and (max-width:560px){
+        margin-top: 24px;
+    }
+
     &-col{
         flex: 0 1 50%;
-        padding: 12px;
-        background-color: darken($black, 3%);
 
         & + &{
             margin-left: 24px;
         }
+
+        @media screen and (max-width:768px){
+            flex: 0 1 100%;
+
+            & + &{
+                margin: 24px 0 0 0;
+            }
+        }
+    }
+
+    &-block{
+        padding: 12px;
+        background-color: darken($black, 3%);
+
+        & + &{
+            margin-top: 24px;
+        }
     }
 
     .btn.block{
-        display: block;
+        display: flex;
         width: 100%;
     }
 
     .info{
         margin-top: 16px;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
+    }
+
+    img, video, canvas{
+        margin-top: 24px;
+        display: block;
+        width: 100%;
+        border: 4px solid $main;
+        outline: none;
+        background-color: transparentize($main, 0.5);
     }
 }

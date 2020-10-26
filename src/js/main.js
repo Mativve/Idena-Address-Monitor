@@ -1,9 +1,11 @@
 import * as ls from './adresses.js';
 import * as notify from "./notify.js";
+import * as qr from "./qrCode.js";
+import * as status from "./compareStatus.js";
 
-const version = "0.1";
+const version = "0.2";
 
-let tableApp, epochInfo;
+let tableApp, epochInfo, dataManager;
 let notified = false;
 
 function timeSince(date) {
@@ -105,6 +107,10 @@ function mountTable(){
             renderAddresses: function(){
                 ls.getAdresses().then(res => {
                     this.addresses = res;
+
+                    if( res ){
+                        status.initStatuses(res);
+                    }
                 });
             },
             saveData: function(e){
@@ -229,26 +235,47 @@ function mountFooter(){
 }
 
 function mountDataManager(){
-    epochInfo = {
+    dataManager = {
         data(){
             return {
                 modal_active: false,
+                maxSource: 0,
+                source: 0
             };
         },
         created(){
         },
         mounted(){
+            qr.init();
         },
         methods:{
             toggleModal: function(){
                 this.modal_active = !this.modal_active;
+
+                if( this.modal_active ){
+                    let addr = ls.returnAddresses();
+                    let txt = "";
+                    
+                    addr.forEach(function(el, i){
+                        txt += el.id + "," + el.name;
+                        
+                        if( i < addr.length-1 ){
+                            txt += "|";
+                        }
+                    });
+
+                    qr.generateCode( btoa(txt) );
+                }
+                else{
+                    qr.stopScan();
+                }
             },
             saveFile: function(){
                 ls.getAdresses(["id","name"]).then(res => {
                     console.log(res);
-                    // let tosave = qr.encodeData(res);
                     let tosave = JSON.stringify(res);
                     let blob = new Blob([tosave], {type: "text/plain"});
+                    
                     let date = new Date();
                     let year = date.getFullYear();
                     let month = (date.getMonth() < 10) ? "0"+date.getMonth() : date.getMonth();
@@ -283,11 +310,40 @@ function mountDataManager(){
                         r.readAsText(f);
                     }
                 });
+            },
+            scanCodeStart: function(){
+                qr.scanCode(function(res){
+                    if( res.length ){
+                        let c = atob(res);
+                        let arr = c.split("|");
+                        let addr = arr.map(function(el){ let u = el.split(","); return {"id":u[0],"name": u[1]}; });
+                        
+                        if( addr ){
+                            ls.saveAddresses(addr);
+                            window.location.reload();
+                        }
+                    }
+
+                });
+
+                let {list, count} = qr.returnSource();
+                this.source = (count+1);
+                this.maxSource = (list) ? list.length : 0;
+            },
+            scanSource: function(){
+                qr.sourceChange();
+                
+                let {list, count} = qr.returnSource();
+                this.source = (count+1);
+                this.maxSource = list.length;
+            },
+            scanCodeEnd: function(){
+                qr.stopScan();
             }
         }
     };
 
-    Vue.createApp(epochInfo).mount('#data-manager');
+    Vue.createApp(dataManager).mount('#data-manager');
 }
 
 function init(){

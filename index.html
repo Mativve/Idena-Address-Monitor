@@ -31,7 +31,7 @@
                         </div>
 
                         <div class="data-manager" id="data-manager">
-                            <button class="btn block" v-on:click="toggleModal">Data manager <i class='bx bxs-file-archive'></i></button>
+                            <button class="btn block" v-on:click="toggleModal"><span>Data manager</span><i class='bx bxs-file-archive'></i></button>
                             <div class="modal" v-bind:class="{ show: modal_active }">
                                 <div class="modal-in">
                                     <div class="modal-header">
@@ -40,18 +40,39 @@
                                     </div>
                                     <div class="modal-content">
                                         <div class="data-manager-col">
-                                            <p class="modal-subtitle">Export data</p>
+                                            <div class="data-manager-block">
+                                                <p class="modal-subtitle">Export data</p>
 
-                                            <button class="btn block" v-on:click="saveFile">Export <i class='bx bx-export'></i></button>
-
-                                            <p class="info">File will be save with in format:<br/><i>iam_YYYY_MM_DD_HH_MM.iam</i></p>
+                                                <button class="btn block" v-on:click="saveFile"><span>Export</span><i class='bx bx-export'></i></button>
+    
+                                                <p class="info blue">File will be save with in format:<br/><i>iam_YYYY_MM_DD_HH_MM.iam</i></p>
+                                            </div>
+                                            <div class="data-manager-block hideMobile">
+                                                <p class="modal-subtitle">QRCode</p>
+                                                <div id="qrcode"></div>
+                                            </div>
                                         </div>
                                         <div class="data-manager-col">
-                                            <p class="modal-subtitle">Import data</p>
+                                            <div class="data-manager-block">
+                                                <p class="modal-subtitle">Import data</p>
 
-                                            <button class="btn block" v-on:click="loadFile">Import <i class='bx bx-import'></i></button>
+                                                <button class="btn block" v-on:click="loadFile"><span>Import</span><i class='bx bx-import'></i></button>
+    
+                                                <p class="info red">Watch out witch file you choose because after import data was <b>overwrited</b>!</p>
+                                            </div>
+                                            <div class="data-manager-block">
+                                                <p class="modal-subtitle">Scan QRCode</p>
+                                                
+                                                <div class="btn-group">
+                                                    <button class="btn block" v-on:click="scanCodeStart"><span>Start</span><i class='bx bx-scan'></i></button>
+                                                    <button class="btn block" v-on:click="scanCodeEnd">Stop <i class='bx bx-stop'></i></button>
+                                                </div>
+                                                <button class="btn block" v-on:click="scanSource"><span>Source {{source}}</span><i class='bx bx-refresh'></i></button>
 
-                                            <p class="info warning">Watch out witch file you choose because after import data was <b>overwrited</b>!</p>
+                                                <video id="video" width="300"></video>
+
+                                                <p class="info red">Watch out witch file you choose because after import data was <b>overwrited</b>!</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -81,7 +102,7 @@
                     <form class="table-action" @submit.prevent="saveData">
                         <input type="text" class="input-control" placeholder="Nick" v-model="name">
                         <input type="text" class="input-control" placeholder="Address" v-model="id">
-                        <button class="btn block" type="submit">Add <i class='bx bx-plus-circle'></i></button>
+                        <button class="btn block" type="submit"><span>Add</span> <i class='bx bx-plus-circle'></i></button>
                     </form>
                     <table class="table-address">
                         <thead>
@@ -124,7 +145,7 @@
                                         <p>Balance: <small>{{ address.balance }}</small></p>
                                         <p>Penalty: <small>{{ address.penalty }}</small></p>
                                         <br/>
-                                        <p><a :href="'https://scan.idena.io/address/' + address.id" target="_blank">Show more details</a></p>
+                                        <p><a :href="'https://scan.idena.io/address/' + address.id" target="_blank"><span>Show more details</span> <i class='bx bx-link-external'></i></a></p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -137,8 +158,9 @@
             <div class="row py-5 footer" id="footer">
                 <div class="col-12 d-flex justify-content-between flex-column flex-lg-row">
                     <div>
+                        <p><small>To get notification about detected differences in online status and get access to camera you must allow this in additional permission of your browser</small></p><br/>
+
                         <p>Create by: Mativve</p>
-                    <div>
                         <p>Version: {{ ver }}</p>
                     </div>
                 </div>
@@ -150,6 +172,7 @@
     <script src='//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js'></script>
     <script src='//cdnjs.cloudflare.com/ajax/libs/favico.js/0.3.10/favico.min.js'></script>
     <script src='//cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script>
+    <script src="//unpkg.com/@zxing/library@latest"></script>
     <script src="dist/js/main.js"></script>
 </body>
 </html>

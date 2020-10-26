@@ -1,7 +1,7 @@
 import * as notify from "./notify.js";
 
 let current = [];
-let statuses = [];
+let saved = [];
 let favicon = new Favico({
     animation: 'slide',
 });
@@ -9,42 +9,46 @@ let favicon = new Favico({
 export function compareStatuses(){
     let diffs = 0;
 
-    if( current.length == statuses.length ){
-        current.forEach(function(el, i){
-            if( el.online != statuses[i].online ){
+    if( current.length == saved.length ){
+        current.forEach(function(now, i){
+            if( now.online != saved[i].online && saved[i].online == false ){
                 diffs++;
             }
         });
 
         if( diffs > 0 ){
-            notify.notifyMe({title:"Status change detected", body: "("+diffs+") account/s status has changed since the last visit. Check them out so you don't lose your iDNAs"});
+            notify.notifyMe({title:"Addresses offline status detected", body: "("+diffs+") account/s status has changed since the last visit. Check them out so you don't lose your iDNAs"});
             favicon.badge(diffs);
         }
 
-        // Save new
         saveStatuses();
     }
     else{
-        console.log("Current and Saved statuses is not the same!");
+        saveStatuses();
     }
 }
 
 export function saveStatuses(){
-    localStorage.setItem("statuses", JSON.stringify(current));
+    localStorage.setItem("savedStatuses", JSON.stringify(current));
 }
 
 export function loadStatuses(){
-    if( !localStorage.getItem("statuses") ){
+    if( !localStorage.getItem("savedStatuses") ){
         saveStatuses();
     }
     else{
-        statuses = JSON.parse(localStorage.getItem("statuses"));
+        saved = JSON.parse(localStorage.getItem("savedStatuses"));
         compareStatuses();
     }
 }
 
-export function initStatuses(c){
-    current = c;
+export function initStatuses(addrs){
+    let addrs_pick = addrs.map((el) => {
+        let {id, name, online} = el;
+        return {"id":id, "online":(online) ? true : false};
+    });
+
+    current = addrs_pick;
 
     loadStatuses();
 }
